@@ -1,4 +1,4 @@
-# MOLAPDataWareHouse# NativeCubeDBMS
+# MOLAPDataWareHouse
 Native Cube (MOLAP) Database Management System for Data Warehouse.
 # Features to Work: 
 Iceberg Cube
