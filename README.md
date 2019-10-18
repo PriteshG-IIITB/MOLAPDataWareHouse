@@ -15,21 +15,37 @@ B.Caching Mechanism
 Run App.java then on console:
 =========Native Cube DBMS======
 1.Create Datawarehouse
+
 2.Use Existing Datewarehouse
+
 3.Load New Data In Existing Datewarehouse
+
 4.Exit
+
 1
 Select Datawarehouse file(.xlsx): 
+
 sales_dwh.xlsx
 Config Property Successfully Created..
+
 Generating Schema file....
+
 Creating Fact Table...
+
 Buidling Hashmap...
+
 Indexing Dimensions...
+
 Generating Lattice Of Cuboids...
+
 Collecting Dimension MetaData...
+
 Done...
+
 Time Required: 18.92secs.
+
 Do you wish to continue? 
+
  1->Yes 2->No
+ 
 2
