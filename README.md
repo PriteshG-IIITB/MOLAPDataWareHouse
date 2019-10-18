@@ -12,7 +12,9 @@ B.Caching Mechanism
 #
 4.The Cube Model for the "sales_datawarehouse.xlsx" is  already created and stored in "db_sales_datawarehouse" folder.
 # Example to create datawarehouse:
+
 Run App.java then on console:
+
 =========Native Cube DBMS======
 
 1.Create Datawarehouse
