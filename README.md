@@ -26,9 +26,11 @@ Run App.java then on console:
 4.Exit
 
 1
+
 Select Datawarehouse file(.xlsx): 
 
 sales_dwh.xlsx
+
 Config Property Successfully Created..
 
 Generating Schema file....
