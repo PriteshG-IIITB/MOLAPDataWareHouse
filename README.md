@@ -14,6 +14,7 @@ B.Caching Mechanism
 # Example to create datawarehouse:
 Run App.java then on console:
 =========Native Cube DBMS======
+
 1.Create Datawarehouse
 
 2.Use Existing Datewarehouse
