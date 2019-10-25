@@ -91,5 +91,14 @@ public class MOLAP{
 		code+=","+fact;
 		return code;
 	}
-	
+	public static void main(String[] args)throws Exception {
+		Properties prop=new Properties();
+		prop.load(new FileInputStream(new File("sales_dwh"+"_config.properties")));
+		File cuboidfile = new File(prop.getProperty("latticePath")+"0");
+		FileInputStream cfs = new FileInputStream(cuboidfile);
+	    ObjectInputStream cos = new ObjectInputStream(cfs);
+	    LinkedList<Double> addrList= new LinkedList<Double>();
+	    HashMap<String, LinkedList<Double>> cbhsh = (HashMap<String, LinkedList<Double>>)cos.readObject();
+	    cos.close();cfs.close();
+	}
 }

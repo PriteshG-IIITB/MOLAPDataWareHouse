@@ -1,65 +1,104 @@
 package com.MOLAPDataWarehouse.IIITB.MOLAPDataWarehouse;
-import java.io.*;
 import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Method;
 public class LatticeGenerator
 {
-	public void createLatticeOfCuboids(int set_size,Properties prop)throws Exception
+	private static ArrayList<GTreeNode> leafList;
+	private static HashSet<String> rejectList;
+	private static String aggfunc,oprnd;
+	private static double limit;
+	private static FileOutputStream fos;
+	private static ObjectOutputStream wo;
+	private static Properties prop;
+	private static void makeCombination(int n, int r, int index, int dimidx[], int i) throws Exception 
+	{ 
+		if (index == r)
+		{ 
+			HashMap<String,double[]>cube=new HashMap<String,double[]>(); 
+			String cuboidName="";boolean namechk=false;
+			for(GTreeNode leaf : leafList)
+			{
+				String key="";
+				for (int j = 0; j < r; j++)
+				{
+					if(!namechk){cuboidName+=dimidx[j];}
+					key+=leaf.ancestorList.get(dimidx[j]);
+					if(rejectList.contains(key)){key="";break;}
+				} 
+				namechk=true;
+				if(key.equals("")){continue;}
+				if(cube.containsKey(key))
+				{
+					cube.get(key)[0]+=leaf.factSum;
+					cube.get(key)[1]+=leaf.factCnt;
+					cube.get(key)[2]=cube.get(key)[2]>leaf.factSum?leaf.factSum:cube.get(key)[2];
+					cube.get(key)[3]=cube.get(key)[3]<leaf.factSum?leaf.factSum:cube.get(key)[3];
+					cube.get(key)[4]=cube.get(key)[4]<leaf.factCnt?leaf.factCnt:cube.get(key)[4];
+					cube.get(key)[5]=cube.get(key)[5]<leaf.factCnt?leaf.factCnt:cube.get(key)[5];
+				}
+				else
+				{
+					double[]aggregates=new double[] {leaf.factSum,leaf.factCnt,leaf.factSum,leaf.factSum,leaf.factCnt,leaf.factCnt};
+					cube.put(key,aggregates);
+				}
+			}
+			icebergcube(cube);
+			fos= new FileOutputStream(new File(prop.getProperty("latticePath")+cuboidName));
+			wo= new ObjectOutputStream(fos);
+			wo.writeObject(cube);wo.close();fos.close();
+			return; 
+		}  
+		if (i >= n) return; 
+		dimidx[index] = i; 
+		makeCombination(n, r, index + 1,  dimidx, i + 1); 
+		makeCombination(n, r, index, dimidx, i + 1); 
+	} 
+	private static void icebergcube(HashMap<String, double[]> cube) throws Exception
 	{
-		/*set_size of power set of a set with set_size n is (2^n )*/
-        long pow_set_size =  (long)Math.pow(2, set_size); 
-        FileOutputStream fos;ObjectOutputStream wo;String cuboidName;
-        LinkedList<Double> addrList= new LinkedList<Double>();
-        LinkedList<Double> taddrList= new LinkedList<Double>();
-        HashMap<String, LinkedList<Double>> hshMp = new HashMap<String, LinkedList<Double>>();
-        HashMap<String, LinkedList<Double>> thshMp = new HashMap<String, LinkedList<Double>>();
-        HashMap<String, LinkedList<Double>> reshshMp = new HashMap<String, LinkedList<Double>>();
-        /*Run from counter 000..1 to 111..1*/
-        for(int counter = 1; counter <  pow_set_size; counter++) 
-        { 
-        																																																																																																																																																																															cuboidName="";
-            hshMp = new HashMap<String, LinkedList<Double>>();
-            thshMp = new HashMap<String, LinkedList<Double>>();
-            reshshMp = new HashMap<String, LinkedList<Double>>();
-        	for(int j = 0; j < set_size; j++) 
-            { 
-            	/* Check if jth bit in the  counter is set If set then  
-                Use dimension file of jth column to create cuboid nodes in lattice */
-        		if((counter & (1 << j)) > 0) 
-                {
-                	cuboidName+=j;
-                	if(hshMp.isEmpty()){hshMp=getHshDim(j,prop);}
-                	else
-                	{
-                		thshMp=getHshDim(j, prop);
-                		reshshMp=new HashMap<String, LinkedList<Double>>();
-                		for(String k:hshMp.keySet())
-                		{
-                			addrList=hshMp.get(k);
-                			for(String tk:thshMp.keySet())
-                			{
-                				taddrList=(LinkedList<Double>) thshMp.get(tk).clone();
-                				taddrList.retainAll(addrList);
-                				if(!taddrList.isEmpty())
-                				{reshshMp.put(k+"\t ||"+tk,(LinkedList<Double>) taddrList.clone());}
-                			}
-                		}hshMp.clear();hshMp.putAll(reshshMp);
-                	}
-                }    
-            }
-            fos= new FileOutputStream(new File(prop.getProperty("latticePath")+cuboidName));
-			wo= new ObjectOutputStream(fos);wo.writeObject(hshMp);
-			wo.close();fos.close();
-        } 
-	}
-
-	private HashMap<String, LinkedList<Double>> getHshDim(int j, Properties prop) throws Exception
+		Class<?>[] paramTypes = {String.class,double.class,double[].class};
+		Method method=ConstraintChecker.class.getMethod(aggfunc,paramTypes);
+		int isValid;
+		ArrayList<String>removeKeyList= new ArrayList<String>();
+		for(String key:cube.keySet())
+		{
+			isValid=(int)method.invoke(null, oprnd,limit,cube.get(key));
+			if(isValid==0){rejectList.add(key);}
+			if(isValid!=1){removeKeyList.add(key);}
+		}
+		for(String key:removeKeyList){cube.remove(key);}
+	} 
+	private static void orderedPowerSetRec(int n) throws Exception 
+    { 
+		for(int r=1;r<=n;r++)
+        {	int data[] = new int[r];
+        	makeCombination(n, r, 0, data, 0);
+        }
+    } 
+	
+	public static void latticeGenerator(Properties prop, ArrayList<GTreeNode> leafList, int dimCount,String constraints) throws Exception
 	{
-		File file = new File(prop.getProperty("dimensionsPath")+j);
-	    FileInputStream f = new FileInputStream(file);
-	    ObjectInputStream s = new ObjectInputStream(f);
-	    HashMap<String, LinkedList<Double>> dim = (HashMap<String, LinkedList<Double>>)s.readObject();
-	    s.close();f.close();
-	    return dim;
+		System.out.println("Generating Lattice Of Cuboids...");
+		LatticeGenerator.leafList=leafList;
+		LatticeGenerator.prop=prop;
+		rejectList= new HashSet<String>();
+		if(constraints.contains("sum"))aggfunc="sumBoundChk";
+		else if(constraints.contains("min"))aggfunc="minBoundChk";
+		else if(constraints.contains("max"))aggfunc="maxBoundChk";
+		else if(constraints.contains("cnt"))aggfunc="cntBoundChk";
+		else if(constraints.contains("avg"))aggfunc="avgBoundChk";
+		if(constraints.charAt(4)!='=')
+		{
+			limit=Double.parseDouble(constraints.substring(4));
+			oprnd=constraints.substring(3,4);
+		}
+		else
+		{
+			limit=Double.parseDouble(constraints.substring(5));
+			oprnd=constraints.substring(3,5);
+		}
+		orderedPowerSetRec(dimCount);
 	}
-
 }

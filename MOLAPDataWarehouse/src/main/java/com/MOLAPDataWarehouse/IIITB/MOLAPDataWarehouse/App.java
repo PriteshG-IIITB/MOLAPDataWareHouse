@@ -1,8 +1,6 @@
 package com.MOLAPDataWarehouse.IIITB.MOLAPDataWarehouse;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.Scanner;
+import java.util.*;
 public class App 
 {
 	static Properties prop=new Properties();
@@ -18,13 +16,15 @@ public class App
 	    	System.out.println("3.Load New Data In Existing Datewarehouse");
 	    	System.out.println("4.Exit");
 	    	ip=Integer.parseInt(sc.nextLine());
-	    	if(ip>=4 || ip<1)break;
+	    	if(ip>=5 || ip<1)break;
 	    	switch (ip)
 	    	{
 				case 1: 
 						System.out.println("Select Datawarehouse file(.xlsx): ");
 						filename=sc.nextLine();
-						createDataWareHouse(filename);
+						System.out.println("Enter Iceberg Constraints:");
+						String constraints=sc.nextLine();
+						createDataWareHouse(filename,constraints);
 						break;
 				case 2:
 						System.out.println("Enter Datawarehouse Name: ");
@@ -45,6 +45,10 @@ public class App
 						filename=sc.nextLine();
 						UpdateDataWareHouse(prop,filename);
 						break;
+				case 4:
+						prop.load(new FileInputStream("sales_dwh_config.properties"));
+						//GTreeGenerator.createGTree(prop);
+						GTreeGenerator.loadGTree(prop);
 				default:break;
 			}
 	    	System.out.println("Do you wish to continue? \n 1->Yes 2->No");
@@ -54,7 +58,7 @@ public class App
     	sc.close();
     }
 
-	public static void createDataWareHouse(String filename) throws Exception
+	public static void createDataWareHouse(String filename,String constraints) throws Exception
 	{
 		long startTime = System.currentTimeMillis();
 		filename=filename.substring(0,filename.length()-5);
@@ -62,8 +66,7 @@ public class App
 		System.out.println("Config Property Successfully Created..");
 		prop=new Properties();
 		prop.load(new FileInputStream(new File(filename+"_config.properties")));
-		loadData(prop);
-		genrateLatticeOfCuboids(prop);
+		loadData(prop,constraints);
 		genrateDimensionMetaData(prop);
 		System.out.println("Done...");
 		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");
@@ -71,9 +74,9 @@ public class App
 	private static void UpdateDataWareHouse(Properties prop,String updFile) throws Exception
 	{	
 		long startTime = System.currentTimeMillis();
-		UpdateCubeDB updDb=new UpdateCubeDB();
-		updDb.UpdateBase(prop, updFile);
-		genrateLatticeOfCuboids(prop);
+		//UpdateCubeDB updDb=new UpdateCubeDB();
+		//updDb.UpdateBase(prop, updFile);
+		//genrateLatticeOfCuboids(prop);
 		System.out.println("Data Loaded Successfully...");
 		System.out.println("Time Required: "+(System.currentTimeMillis()-startTime)/1000d+"secs.");	
 	}
@@ -90,27 +93,15 @@ public class App
     	prop.setProperty("dimensionsDirPath", "db_"+filename+"/dimensions/");
     	prop.setProperty("dimensionInfoDirPath", "db_"+filename+"/dimensionMetadata/");
     	prop.setProperty("latticeDirPath", "db_"+filename+"/lattice/");
-    	prop.setProperty("basePath", "db_"+filename+"/base/base");
-    	prop.setProperty("dimensionsPath", "db_"+filename+"/dimensions/dim");
+    	prop.setProperty("basePath", "db_"+filename+"/base/");
+    	prop.setProperty("dimensionsPath", "db_"+filename+"/dimensions/");
     	prop.setProperty("dimensionInfoPath","db_"+filename+"/dimensionMetadata/");
     	prop.setProperty("latticePath", "db_"+filename+"/lattice/cuboid");
     	FileOutputStream out = new FileOutputStream(filename+"_config.properties");
     	prop.store(out, null);
     	out.close();
 	}
-    //To generate Lattice of Cuboids.
-    private static void genrateLatticeOfCuboids(Properties prop)throws Exception
-    {
-    	FileInputStream fs;ObjectInputStream os;
-    	fs=new FileInputStream(prop.getProperty("schemaPath")+"dimSchema");
-		os= new ObjectInputStream(fs);
-		HashMap<Integer,String> dimhsh=(HashMap<Integer,String>)os.readObject();
-		os.close();fs.close();
-		int dimCount=dimhsh.size();dimhsh.clear();
-		LatticeGenerator lattice= new LatticeGenerator();
-		System.out.println("Generating Lattice Of Cuboids...");
-		lattice.createLatticeOfCuboids(dimCount, prop);
-	}
+  
 
 	//To read Data as per OLAP operations :slice/dice/roll up/drill down.We need UI interaction here.
 	private static void readData(Properties prop,String filename,Scanner sc)throws Exception
@@ -169,14 +160,13 @@ public class App
 	}
 	
     //To create base & dimension index files
-	private static void loadData(Properties prop)throws Exception
+	private static void loadData(Properties prop,String constraints)throws Exception
 	{
         makeDirectory(prop);
         Schema schm= new Schema();
-        Load load =new Load();
         schm.generateSchema(prop);
-        System.out.println("Creating Fact Table...");
-        load.createBase(prop);        
+        System.out.println("Creating G-Tree...");
+        GTreeGenerator.createGTree(prop,constraints);
 	}
 
 	//make directory as per excel data file name.It will have two folder base and dimensions.
