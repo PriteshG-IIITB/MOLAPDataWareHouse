@@ -34,14 +34,12 @@ public class LatticeGenerator
 				{
 					cube.get(key)[0]+=leaf.factSum;
 					cube.get(key)[1]+=leaf.factCnt;
-					cube.get(key)[2]=cube.get(key)[2]>leaf.factSum?leaf.factSum:cube.get(key)[2];
-					cube.get(key)[3]=cube.get(key)[3]<leaf.factSum?leaf.factSum:cube.get(key)[3];
-					cube.get(key)[4]=cube.get(key)[4]<leaf.factCnt?leaf.factCnt:cube.get(key)[4];
-					cube.get(key)[5]=cube.get(key)[5]<leaf.factCnt?leaf.factCnt:cube.get(key)[5];
+					cube.get(key)[2]=cube.get(key)[2]>leaf.factCnt?leaf.factCnt:cube.get(key)[2];
+					cube.get(key)[3]=cube.get(key)[3]>leaf.factSum?leaf.factSum:cube.get(key)[3];
 				}
 				else
-				{
-					double[]aggregates=new double[] {leaf.factSum,leaf.factCnt,leaf.factSum,leaf.factSum,leaf.factCnt,leaf.factCnt};
+				{ 
+					double[]aggregates=new double[] {leaf.factSum,leaf.factCnt,leaf.factCnt,leaf.factSum};
 					cube.put(key,aggregates);
 				}
 			}
@@ -85,8 +83,6 @@ public class LatticeGenerator
 		LatticeGenerator.prop=prop;
 		rejectList= new HashSet<String>();
 		if(constraints.contains("sum"))aggfunc="sumBoundChk";
-		else if(constraints.contains("min"))aggfunc="minBoundChk";
-		else if(constraints.contains("max"))aggfunc="maxBoundChk";
 		else if(constraints.contains("cnt"))aggfunc="cntBoundChk";
 		else if(constraints.contains("avg"))aggfunc="avgBoundChk";
 		if(constraints.charAt(4)!='=')

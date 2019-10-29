@@ -57,7 +57,7 @@ public class GTreeGenerator
 		if (i==dimCount)
 		{
 			root.ancestorList=ancestorList;
-			leafList.add(root);
+			if(!root.isadded){root.isadded=true;leafList.add(root);}
 			return;
 		}
 		if(i>dimCount)return;

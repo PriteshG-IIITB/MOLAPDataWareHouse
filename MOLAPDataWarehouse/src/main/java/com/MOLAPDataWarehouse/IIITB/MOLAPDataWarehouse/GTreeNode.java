@@ -4,6 +4,7 @@ import java.util.*;
 public class GTreeNode implements Serializable {
 
 	String dimension,dataVal;
+	boolean isadded;
 	double factSum;int factCnt;
 	HashMap<String,GTreeNode> childMap;
 	ArrayList<String> ancestorList;
@@ -13,7 +14,8 @@ public class GTreeNode implements Serializable {
 		 childMap=new HashMap<String,GTreeNode>();
 		 if(isLeaf){ancestorList= new ArrayList<String>();}
 		 else ancestorList=null;
+		 isadded=false;
 	 }
-	public void addfact(double fact) {factSum+=fact;}
+	public void addfact(double fact){factSum+=fact;}
 	public void addfactCnt(){factCnt++;}
 }
