@@ -49,4 +49,28 @@ public class ConstraintChecker {
 		}
 		return 0;
 	}
+	public static int avgBoundChk(String oprnd,double limit,double[]aggArr)
+	{
+		double upperbound=aggArr[0]/aggArr[2];
+		double lowerbound=aggArr[3]/aggArr[1];
+		switch (oprnd)
+		{
+			case ">":
+				if(upperbound>limit)return 1;break;
+			case ">=":
+				if(upperbound>=limit)return 1;break;
+			case "<":
+				if(upperbound>=limit && lowerbound>=limit)return 0;
+				if(upperbound<limit)return 1;
+				if(upperbound>=limit && lowerbound<limit)return 2;
+				break;
+			case "<=":
+				if(upperbound>limit && lowerbound>limit)return 0;
+				if(upperbound<=limit)return 1;
+				if(upperbound>limit && lowerbound<=limit)return 2;
+				break;
+			default:break;
+		}
+		return 0;
+	}
 }
