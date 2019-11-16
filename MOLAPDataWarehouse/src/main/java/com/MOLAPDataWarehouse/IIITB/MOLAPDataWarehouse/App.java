@@ -45,10 +45,7 @@ public class App
 						filename=sc.nextLine();
 						UpdateDataWareHouse(prop,filename);
 						break;
-				case 4:
-						prop.load(new FileInputStream("sales_dwh_config.properties"));
-						//GTreeGenerator.createGTree(prop);
-						GTreeGenerator.loadGTree(prop);
+				case 4: break;
 				default:break;
 			}
 	    	System.out.println("Do you wish to continue? \n 1->Yes 2->No");

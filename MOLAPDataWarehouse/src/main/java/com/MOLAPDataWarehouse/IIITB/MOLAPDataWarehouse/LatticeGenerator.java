@@ -25,7 +25,7 @@ public class LatticeGenerator
 				for (int j = 0; j < r; j++)
 				{
 					if(!namechk){cuboidName+=dimidx[j];}
-					key+=leaf.ancestorList.get(dimidx[j]);
+					key+=leaf.ancestorList.get(dimidx[j])+"\t";
 					if(rejectList.contains(key)){key="";break;}
 				} 
 				namechk=true;

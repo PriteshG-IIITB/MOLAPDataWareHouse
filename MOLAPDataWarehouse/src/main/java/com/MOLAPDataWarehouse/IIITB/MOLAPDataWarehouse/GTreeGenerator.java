@@ -31,9 +31,10 @@ public class GTreeGenerator
 		System.out.println("Constructing G-Tree....");
 		root= new GTreeNode("root", "root", 0, false);
 		leafList= new ArrayList<GTreeNode>();
+		String factname;
 		for(Row row:sheet)
 		{
-			if(row.getRowNum()==0)continue;
+			if(row.getRowNum()==0){continue;}
 			int factidx=row.getLastCellNum();
 			double factVal=Double.parseDouble(((StreamingCell)row.getCell(factidx-1)).getStringCellValue());
 			ancestorList= new ArrayList<String>();
