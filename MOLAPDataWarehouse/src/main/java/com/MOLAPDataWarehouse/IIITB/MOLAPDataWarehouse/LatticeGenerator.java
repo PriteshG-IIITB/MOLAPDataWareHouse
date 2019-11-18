@@ -26,10 +26,11 @@ public class LatticeGenerator
 				{
 					if(!namechk){cuboidName+=dimidx[j];}
 					key+=leaf.ancestorList.get(dimidx[j])+"\t";
-					if(rejectList.contains(key)){key="";break;}
+					//if(rejectList.contains(key)){key="";break;}
 				} 
 				namechk=true;
-				if(key.equals("")){continue;}
+				if(rejectList.contains(key)){continue;}
+				//if(key.equals("")){continue;}
 				if(cube.containsKey(key))
 				{
 					cube.get(key)[0]+=leaf.factSum;
